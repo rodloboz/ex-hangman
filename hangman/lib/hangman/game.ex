@@ -1,4 +1,5 @@
 defmodule Hangman.Game do
+
   alias Hangman.Game
 
   defstruct [

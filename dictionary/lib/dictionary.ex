@@ -1,4 +1,5 @@
 defmodule Dictionary do
+
   @filename "../assets/words.txt"
 
   def word_list do
