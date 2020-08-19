@@ -1,7 +1,9 @@
 defmodule Hangman do
 
+  alias Hangman.GamesSupervisor
+
   def new_game do
-    Hangman.Server.start_link
+    GamesSupervisor.start_game
   end
 
   def tally(game_pid) do
