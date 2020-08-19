@@ -8,22 +8,34 @@ defmodule Hangman.Game do
     used:       MapSet.new(),
   ]
 
-  def new_game do
+  def new_game(word) do
     %Game{
-      letters: letters()
+      letters: word |> String.codepoints
     }
   end
 
+  def new_game do
+    new_game(Dictionary.random_word)
+  end
+
   def make_move(game = %Game{ game_state: state }, _guess) when state in [:won, :lost] do
-    { game, tally(game) }
+    game
   end
 
   def make_move(game = %Game{}, guess) do
-    game =
-      MapSet.member?(game.used, guess)
-      |> accept_move(game, guess)
-    { game, tally(game) }
+    MapSet.member?(game.used, guess)
+    |> accept_move(game, guess)
   end
+
+  def tally(game) do
+    %{
+      game_state: game.game_state,
+      turns_left: game.turns_left,
+      letters: game.letters |> reveal_guessed(game.used)
+    }
+  end
+
+  # Private functions
 
   defp accept_move(_already_guessed = true, game, _guess) do
     Map.put(game, :game_state, :already_used)
@@ -42,19 +54,26 @@ defmodule Hangman.Game do
     Map.put(game, :game_state, new_state)
   end
 
-  defp score_guess(game, _guess, _not_good_guess) do
-    game
+  defp score_guess(game =  %Game{ turns_left: 1 }, _guess, _not_good_guess) do
+    Map.put(game, :game_state, :lost)
+  end
+
+  defp score_guess(game =  %Game{ turns_left: turns_left }, _guess, _not_good_guess) do
+   %{
+      game |
+      game_state: :bad_guess,
+      turns_left: turns_left - 1
+    }
   end
 
   defp check_win(true), do: :won
   defp check_win(_),    do: :good_guess
 
-  defp letters do
-    Dictionary.random_word
-    |> String.codepoints
+  defp reveal_guessed(letters, used) do
+    letters
+    |> Enum.map(&reveal_letter(&1, MapSet.member?(used, &1)))
   end
 
-  defp tally(_game) do
-    123
-  end
+  defp reveal_letter(letter, _in_word = true), do: letter
+  defp reveal_letter(_letter, _not_in_word = false), do: "_"
 end
