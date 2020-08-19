@@ -1,26 +1,17 @@
 defmodule WebClientWeb.HangmanView do
   use WebClientWeb, :view
 
-  @responses %{
-    :won          => { :success, "You won!" },
-    :lost         => { :danger, "You lost!" },
-    :good_guess   => { :success, "Good guess!" },
-    :bad_guess    => { :warning, "Bad guess!" },
-    :already_used => { :info, "You already used that letter! "}
-  }
+  import WebClient.Views.Helpers.GameStateHelper
 
-  def game_state(state) do
-    @responses[state]
-    |> alert
+  def new_game_button(conn) do
+    button("New Game", to: Routes.hangman_path(conn, :create))
   end
 
-  defp alert(nil), do: ""
-  defp alert({ class, message }) do
-    """
-    <div class="alert alert-#{class}">
-      #{message}
-    </div>
-    """
-    |> raw()
+  def turn(left, target) when target >= left do
+    "opacity: 1"
+  end
+
+  def turn(left, target) do
+    "opacity: 0.1"
   end
 end
